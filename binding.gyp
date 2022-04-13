@@ -5,7 +5,7 @@
 			'Common': {
 				'cflags_cc': [ '-std=c++14', '-g', '-Wno-unknown-pragmas' ],
 				'cflags_cc!': [ '-fno-exceptions' ],
-				'include_dirs': [ './src', './vendor' ],
+				'include_dirs': [ './src', './vendor', "<!(node -e \"require('nan')\")" ],
 				'xcode_settings': {
 					'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
 					'GCC_GENERATE_DEBUGGING_SYMBOLS': 'YES',
@@ -87,6 +87,8 @@
 				'src/module/script_handle.cc',
 				'src/module/session_handle.cc',
 				'src/module/transferable.cc',
+				'vendor/node-addon-tracer/tracer.cpp',
+				'vendor/node-addon-tracer/uvasync.cpp',
 			],
 			'conditions': [
 				[ 'OS != "win"', {

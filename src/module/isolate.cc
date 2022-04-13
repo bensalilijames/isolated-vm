@@ -12,11 +12,13 @@
 #include "native_module_handle.h"
 #include "reference_handle.h"
 #include "script_handle.h"
+#include "node-addon-tracer/tracer.h"
 
 #include <memory>
 #include <mutex>
 
 using namespace v8;
+using namespace node_addon_tracer;
 
 namespace ivm {
 
@@ -91,6 +93,8 @@ struct IsolateHolderAndJoin {
 auto* default_isolates = new lockable_t<std::unordered_map<v8::Isolate*, IsolateHolderAndJoin>>;
 extern "C"
 void init(Local<Object> target) {
+	tracer::Init(target);
+
 	// Create default isolate env
 	Isolate* isolate = Isolate::GetCurrent();
 	Local<Context> context = isolate->GetCurrentContext();

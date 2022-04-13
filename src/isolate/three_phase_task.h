@@ -6,7 +6,10 @@
 #include "remote_handle.h"
 #include "stack_trace.h"
 #include "util.h"
+#include "node-addon-tracer/tracer.h"
 #include <memory>
+
+using namespace node_addon_tracer;
 
 namespace ivm {
 
@@ -94,8 +97,10 @@ class ThreePhaseTask {
 
 		template <int async, typename T, typename ...Args>
 		static auto Run(IsolateHolder& second_isolate, Args&&... args) -> v8::Local<v8::Value> {
+			tracer::Log("isolated-vm", LogLevel::TRACE, "Starting to run three phase task");
 
 			if (async == 1) { // Full async, promise returned
+				tracer::Log("isolated-vm", LogLevel::TRACE, "Full async, promise returned");
 				// Build a promise for outer isolate
 				v8::Isolate* isolate = v8::Isolate::GetCurrent();
 				auto context_local = isolate->GetCurrentContext();
@@ -118,6 +123,7 @@ class ThreePhaseTask {
 				});
 				return promise_local->GetPromise();
 			} else if (async == 2) { // Async, promise ignored
+				tracer::Log("isolated-vm", LogLevel::TRACE, "Async, promise ignored");
 				// Schedule Phase2 async
 				second_isolate.ScheduleTask(
 					std::make_unique<Phase2RunnerIgnored>(
@@ -126,6 +132,7 @@ class ThreePhaseTask {
 				);
 				return v8::Undefined(v8::Isolate::GetCurrent());
 			} else {
+				tracer::Log("isolated-vm", LogLevel::TRACE, "Sync");
 				// Execute synchronously
 				T self(std::forward<Args>(args)...);
 				return self.RunSync(second_isolate, async == 4);

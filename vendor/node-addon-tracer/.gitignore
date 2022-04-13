@@ -1,0 +1,11 @@
+build
+node_modules/
+npm-debug.log*
+tracer.js
+tracer.js.map
+
+/tests/tester.js
+/tests/tester.js.map
+/package-lock.json
+/.vscode
+drorgl-node-addon-tracer-*

@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+		"target": "es6"
+        ,"module": "commonjs"
+        ,"noImplicitAny": false
+        ,"removeComments": false
+		,"moduleResolution": "node"
+        ,"preserveConstEnums": true
+        ,"sourceMap": true
+		,"experimentalDecorators": true
+		,"emitDecoratorMetadata": true
+		,"lib" : ["es6"]
+		,"typeRoots" : [
+			"../node_modules/@types"
+		]
+    }
+}

@@ -15,12 +15,14 @@
 #include "isolate/v8_version.h"
 #include "module/evaluation.h"
 #include "v8-platform.h"
+#include "node-addon-tracer/tracer.h"
 #include <deque>
 #include <memory>
 
 using namespace v8;
 using std::shared_ptr;
 using std::unique_ptr;
+using namespace node_addon_tracer;
 
 namespace ivm {
 
@@ -60,6 +62,8 @@ auto IsolateHandle::Definition() -> Local<FunctionTemplate> {
  * Create a new Isolate. It all starts here!
  */
 auto IsolateHandle::New(MaybeLocal<Object> maybe_options) -> unique_ptr<ClassHandle> {
+	tracer::Log("isolated-vm", LogLevel::TRACE, "Creating a new isolate");
+
 	shared_ptr<BackingStore> snapshot_blob;
 	RemoteHandle<Function> error_handler;
 	size_t snapshot_blob_length = 0;

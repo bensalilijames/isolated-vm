@@ -26,5 +26,8 @@
   "bugs": {
     "url": "https://github.com/laverdet/isolated-vm/issues"
   },
-  "homepage": "https://github.com/laverdet/isolated-vm#readme"
+  "homepage": "https://github.com/laverdet/isolated-vm#readme",
+  "dependencies": {
+    "nan": "^2.15.0"
+  }
 }

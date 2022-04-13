@@ -7,9 +7,11 @@
 #include "transferable.h"
 #include "transferable.h"
 #include "external_copy_handle.h"
+#include "node-addon-tracer/tracer.h"
 #include <deque>
 
 using namespace v8;
+using namespace node_addon_tracer;
 
 namespace ivm {
 namespace {
@@ -37,6 +39,7 @@ class TransferablePromiseHolder final : public ClassHandle {
 		TransferablePromiseHolder(const TransferablePromiseHolder&) = delete;
 
 		~TransferablePromiseHolder() final {
+			tracer::Log("isolated-vm", LogLevel::TRACE, "Calling Save (from TransferablePromiseHolder destructor)");
 			Save(true, [&]() {
 				return std::make_shared<ExternalCopyError>(ExternalCopyError::ErrorType::Error, "Promise was abandoned");
 			});
@@ -73,6 +76,7 @@ class TransferablePromiseHolder final : public ClassHandle {
 		}
 
 		static void Resolved(TransferablePromiseHolder& that, Local<Value> value) {
+			tracer::Log("isolated-vm", LogLevel::TRACE, "Calling Save (from Resolved function)");
 			that.Save(false, [&]() {
 				return TransferOut(value, that.transfer_options);
 			});
@@ -83,7 +87,9 @@ class TransferablePromiseHolder final : public ClassHandle {
 		void Save(bool did_throw, Function callback) {
 			std::shared_ptr<Transferable> resolved_value;
 			auto pending_tasks = [&]() -> std::deque<RemoteTuple<Promise::Resolver, v8::Context>> {
+				tracer::Log("isolated-vm", LogLevel::TRACE, "Acquiring lock on promise state (from Save)");
 				auto lock = state->write();
+				tracer::Log("isolated-vm", LogLevel::TRACE, "Acquired lock on promise state (from Save)");
 				if (!lock->resolved) {
 					lock->resolved = true;
 					FunctorRunners::RunCatchExternal(Isolate::GetCurrent()->GetCurrentContext(), [&]() {
@@ -106,6 +112,7 @@ class TransferablePromiseHolder final : public ClassHandle {
 		}
 
 		static void Rejected(TransferablePromiseHolder& that, Local<Value> value) {
+			tracer::Log("isolated-vm", LogLevel::TRACE, "Calling Save (from Rejected function)");
 			that.Save(true, [&]() {
 				return ExternalCopy::CopyThrownValue(value);
 			});
@@ -152,7 +159,9 @@ class TransferablePromise : public Transferable {
 			auto* isolate = Isolate::GetCurrent();
 			auto context = isolate->GetCurrentContext();
 			auto resolver = Unmaybe(Promise::Resolver::New(context));
+			tracer::Log("isolated-vm", LogLevel::TRACE, "Acquiring lock on promise state (from TransferIn)");
 			auto lock = state->write();
+			tracer::Log("isolated-vm", LogLevel::TRACE, "Acquired lock on promise state (from TransferIn)");
 			if (lock->resolved) {
 				if (lock->did_throw) {
 					Unmaybe(resolver->Reject(context, lock->value->TransferIn()));
