@@ -1,4 +1,6 @@
 declare module "isolated-vm" {
+	export const ivm: Omit<typeof import("isolated-vm"), "ivm">;
+
 	export type Transferable =
 		| null
 		| undefined

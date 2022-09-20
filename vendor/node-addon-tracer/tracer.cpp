@@ -107,7 +107,11 @@ void tracer::Init(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
 	Nan::SetAccessor(exports, Nan::New("batch_length").ToLocalChecked(), batch_length_getter, batch_length_setter);
 	Nan::SetAccessor(exports, Nan::New("buffer_length").ToLocalChecked(), buffer_length_getter, buffer_length_setter);
 	_logger_async = std::make_shared<uvasync>(_async_logger_callback);
-	node::AtExit(deinit);
+
+	v8::Isolate* isolate = v8::Isolate::GetCurrent();
+	node::AddEnvironmentCleanupHook(isolate, [](void* param) {
+		_logger_async.reset();
+	}, isolate);
 }
 
 NAN_SETTER(tracer::log_level_setter) {
